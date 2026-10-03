@@ -80,7 +80,3 @@ run:
   # Methods only (Class#method). Whole classes can't be marked critical.
   # criticalTests:
   #   - tests.LoginScenariosTest#positive_login_test
-
-  # Skipped tests reported to Reporter per batch (default: 20).
-  # Must be ≤ the Reporter property smart-agent.skip-tests-batch-size.
-  # skipReportBatchSize: 20

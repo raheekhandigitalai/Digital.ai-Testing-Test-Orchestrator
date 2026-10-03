@@ -60,14 +60,14 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 
 ## ✅ Prerequisites
 
-| Requirement | Supported |
-|---|---|
-| **Java** | 17 or 21 |
-| **Build tool** | Gradle or Maven |
-| **Test framework** | JUnit 5 (Jupiter) or TestNG 7+ |
-| **Appium Java client** | 8, 9 or 10 |
-| **Digital.ai Testing** | A cloud URL and an [access key](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent) |
-| **Test Orchestrator JAR** | Ask your Digital.ai representative or the [Support Portal](https://support.digital.ai/hc/en-us) |
+| Requirement | Supported                                                                                                                                      |
+|---|------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Java** | 17 or 21                                                                                                                                       |
+| **Build tool** | Gradle or Maven                                                                                                                                |
+| **Test framework** | JUnit 5 (Jupiter) or TestNG 7+                                                                                                                 |
+| **Appium Java client** | 8, 9 or 10                                                                                                                                     |
+| **Digital.ai Testing** | A cloud URL and an [access key](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/getting-started/obtain-your-access-key) |
+| **Test Orchestrator JAR** | Ask your Digital.ai representative or the [Support Team](https://support.digital.ai/hc/en-us)                                                                                     |
 
 ---
 
@@ -78,7 +78,7 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 ├── lib/
 │   ├── smart-agent-1.0-SNAPSHOT.jar   ← the Test Orchestrator agent
 │   ├── config.yml                     ← THE config file: the agent reads this one
-│   └── config.example.yml             ← reference: every option, fully commented
+│   └── config.example.yml             ← annotated example with more options
 ├── src/test/java/tests/
 │   ├── LoginScenariosTest.java        ← 3 example tests (1 fails on purpose)
 │   └── PaymentScenariosTest.java      ← 3 example tests (1 fails on purpose)
@@ -109,7 +109,7 @@ cloud:
   accessKey: <YOUR_ACCESS_KEY>
 ```
 
-> 📖 **Want to see every option?** [`lib/config.example.yml`](lib/config.example.yml) shows the full structure, with every available key commented and explained (Android, app versions, device pools, test selection, fail fast). Use it as a reference and copy across whatever you need.
+> 📖 **Need more than the basics?** [`lib/config.example.yml`](lib/config.example.yml) is an annotated example. It shows how to set up Android, pin app versions, use device pools, select tests and configure fail fast. Copy across whatever you need.
 
 ### 3. Attach the agent (already done in this repo)
 
@@ -185,7 +185,7 @@ When the test runs, it uses:
 | Device query | `@os='ios' and @version>='18.0'` | Set in `config.yml`, so it **overrides** the code |
 | App | `cloud:com.experitest.ExperiBank` | Not set in `config.yml`, so the **code value** is kept |
 
-This means you can adopt Test Orchestrator without touching your tests, then move settings into `config.yml` one at a time.
+This means you can adopt Test Orchestrator without touching your tests.
 
 ```yaml
 # ─── Where to run ──────────────────────────────────────────────
@@ -227,7 +227,6 @@ run:
     # - tests.PaymentScenariosTest#edge_case_payment_test  # a single method
   # criticalTests:                        # Fail fast (see below)
   #   - tests.LoginScenariosTest#positive_login_test
-  # skipReportBatchSize: 20
 ```
 
 ### Key-by-key
@@ -246,7 +245,6 @@ run:
 | `run.maxRetryAttempts` | | How many times a **failed** test is retried. Default is `0`. |
 | `run.testSelection` | | Classes (`ClassName`) or methods (`ClassName#method`) to run. Leave empty to run all tests. |
 | `run.criticalTests` | | Methods that trigger [fail fast](#-fail-fast-for-critical-tests) when they fail. |
-| `run.skipReportBatchSize` | | How many skipped tests are reported to Reporter per batch. Default is `20`. |
 
 > ⚠️ **YAML is sensitive to indentation.** Use spaces, not tabs. If a run behaves unexpectedly, validate the file first.
 
@@ -282,7 +280,6 @@ When a critical test fails (for example, login), the tests after it will usually
 run:
   criticalTests:
     - tests.LoginScenariosTest#positive_login_test   # must be Class#method; whole classes aren't supported
-  skipReportBatchSize: 20
 ```
 
 When a critical test **still fails after all its retries**, Test Orchestrator:
@@ -292,8 +289,6 @@ When a critical test **still fails after all its retries**, Test Orchestrator:
 3. Marks the remaining tests as **Skipped**, with the reason *"Skipped due to critical test failure: &lt;TestCaseID&gt;"*.
 
 Skipped tests are never retried, and they have no steps, video or logs. Tests that already finished keep their status.
-
-> ℹ️ The Reporter property `smart-agent.skip-tests-batch-size` (default `20`) must be **greater than or equal to** `skipReportBatchSize`, or batch requests will fail.
 
 ### 🔄 Test status sync (automatic)
 
@@ -400,7 +395,6 @@ The log shows which config was loaded, which frameworks were detected (Java, JUn
 | Strange or ignored settings | YAML indentation. Use spaces only and validate the file. |
 | `NoSuchMethodError` / instrumentation errors in the log | Check you're on Java 17/21 and Appium java-client 8–10, and look for conflicting `byte-buddy` versions on the test classpath. |
 | Retries don't happen | Is `run.maxRetryAttempts` greater than `0`? Only **failed** tests are retried. |
-| Fail-fast batch errors | Make sure `smart-agent.skip-tests-batch-size` in Reporter is ≥ `skipReportBatchSize`. |
 | Results hard to find in Reporter | Filter by **Build ID**, which comes from `-Dbuild.id`. |
 
 ---
