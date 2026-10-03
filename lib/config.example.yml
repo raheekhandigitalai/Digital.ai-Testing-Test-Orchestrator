@@ -1,0 +1,86 @@
+# ══════════════════════════════════════════════════════════════════════
+#  Digital.ai Test Orchestrator: configuration template
+# ══════════════════════════════════════════════════════════════════════
+#
+#  1. Copy this file:   cp lib/config.example.yml lib/config.yml
+#  2. Fill in the <PLACEHOLDERS> below.
+#  3. Run your tests:   ./gradlew test
+#
+#  lib/config.yml is git-ignored, so your access key stays local.
+#
+#  HOW THIS FILE RELATES TO YOUR TEST CODE
+#  Capabilities your tests set in code still work. Any setting that is
+#  also defined here OVERRIDES the value in code. Leave a key out (or
+#  commented) and the value from your code is used instead.
+#
+#  Indent with spaces only. Tabs and misaligned keys break YAML.
+# ══════════════════════════════════════════════════════════════════════
+
+
+# ─── 1. CLOUD CONNECTION (required) ───────────────────────────────────
+cloud:
+  url: https://<YOUR_CLOUD_HOST>/wd/hub      # SaaS or on-prem Appium endpoint
+  accessKey: <YOUR_ACCESS_KEY>               # Your access key in Digital.ai Testing
+
+
+# ─── 2. APP UNDER TEST (optional) ─────────────────────────────────────
+#  "cloud:<bundleId|packageName>" installs an app already uploaded to the
+#  cloud. "cloud:<uniqueName>" also works.
+app:
+  ios:
+    app: cloud:com.experitest.ExperiBank
+    bundleID: com.experitest.ExperiBank
+    # appBuildVersion: "1234"                # Pin a specific uploaded build
+    # appReleaseVersion: "2.1.0"             # Pin a specific release
+
+  # android:
+  #   app: cloud:com.experitest.ExperiBank/.LoginActivity
+  #   packageName: com.experitest.ExperiBank
+  #   activity: .LoginActivity
+  #   appBuildVersion: "1234"
+  #   appReleaseVersion: "2.1.0"
+
+
+# ─── 3. DEVICE SELECTION (optional) ───────────────────────────────────
+#  Standard Digital.ai device query syntax. Change devices for every test
+#  from here, without touching code.
+deviceQuery:
+  iosQuery:
+    deviceQuery: "@os='ios' and @category='PHONE'"
+    # deviceQuery: "@os='ios' and @version>='18.0'"
+
+  # androidQuery:
+  #   deviceQuery: "@os='android' and @category='PHONE'"
+
+  # devicePool: SHARED                       # Restrict to a device pool
+
+
+# ─── 4. APPIUM SERVER (optional) ──────────────────────────────────────
+#  Appium SERVER version in the cloud. Your Appium Java client version
+#  is set in build.gradle.kts / pom.xml, not here.
+appium:
+  appiumVersion: 3.5.2
+
+
+# ─── 5. RUN BEHAVIOUR ─────────────────────────────────────────────────
+run:
+  # Retry each FAILED test up to N more times (default: 0).
+  # Every attempt shows up in Reporter, so you can tell flaky from broken.
+  maxRetryAttempts: 2
+
+  # Which tests to run. Leave empty to run everything.
+  #   ClassName              → the whole class
+  #   ClassName#methodName   → one test method
+  testSelection:
+    # - tests.LoginScenariosTest
+    # - tests.PaymentScenariosTest#edge_case_payment_test
+
+  # Fail fast: if a critical test still fails after its retries, the
+  # remaining queued tests are marked Skipped instead of run.
+  # Methods only (Class#method). Whole classes can't be marked critical.
+  # criticalTests:
+  #   - tests.LoginScenariosTest#positive_login_test
+
+  # Skipped tests reported to Reporter per batch (default: 20).
+  # Must be ≤ the Reporter property smart-agent.skip-tests-batch-size.
+  # skipReportBatchSize: 20
