@@ -65,7 +65,7 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 | **Java** | 17 or 21 |
 | **Build tool** | Gradle or Maven |
 | **Test framework** | JUnit 5 (Jupiter) or TestNG 7+ |
-| **Appium Java client** | 8, 9 or 10 (set in your project's dependencies, **not** in YAML) |
+| **Appium Java client** | 8, 9 or 10 |
 | **Digital.ai Testing** | A cloud URL and an [access key](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent) |
 | **Test Orchestrator JAR** | Ask your Digital.ai representative or the [Support Portal](https://support.digital.ai/hc/en-us) |
 
@@ -77,8 +77,8 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 .
 ├── lib/
 │   ├── smart-agent-1.0-SNAPSHOT.jar   ← the Test Orchestrator agent
-│   ├── config.example.yml             ← template: copy to config.yml
-│   └── config.yml                     ← your real config (git-ignored, holds your key)
+│   ├── config.yml                     ← THE config file: the agent reads this one
+│   └── config.example.yml             ← reference: every option, fully commented
 ├── src/test/java/tests/
 │   ├── LoginScenariosTest.java        ← 3 example tests (1 fails on purpose)
 │   └── PaymentScenariosTest.java      ← 3 example tests (1 fails on purpose)
@@ -95,17 +95,13 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 ### 1. Clone the repo
 
 ```bash
-git clone <this-repo-url>
-cd SmartAgentTest
+git clone https://github.com/raheekhandigitalai/Digital.ai-Testing-Test-Orchestrator.git
+cd Digital.ai-Testing-Test-Orchestrator
 ```
 
-### 2. Create your config and add your cloud details
+### 2. Add your cloud details to `lib/config.yml`
 
-```bash
-cp lib/config.example.yml lib/config.yml
-```
-
-Then edit `lib/config.yml`:
+`lib/config.yml` is the main configuration file. Test Orchestrator reads it on every run. Fill in your cloud URL and access key:
 
 ```yaml
 cloud:
@@ -113,7 +109,7 @@ cloud:
   accessKey: <YOUR_ACCESS_KEY>
 ```
 
-> 🔐 `lib/config.yml` is already in `.gitignore`, so your key stays local. See [Keeping credentials safe](#-keeping-credentials-safe).
+> 📖 **Want to see every option?** [`lib/config.example.yml`](lib/config.example.yml) shows the full structure, with every available key commented and explained (Android, app versions, device pools, test selection, fail fast). Use it as a reference and copy across whatever you need.
 
 ### 3. Attach the agent (already done in this repo)
 
@@ -130,9 +126,13 @@ tasks.test {
 }
 ```
 
-> 🧪 **This repo uses TestNG.** Using **JUnit 5** instead? The agent setup is the same: swap `useTestNG()` for `useJUnitPlatform()` and add the JUnit dependencies. [Here's how to set it up for JUnit in the docs →](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent#step-5-update-your-gradle-test-task)
+> 🧪 **This repo uses TestNG.** Using **JUnit 5** instead? The agent setup is the same: swap `useTestNG()` for `useJUnitPlatform()` and add the JUnit dependencies.
+> 
+> [Here's how to set it up for JUnit in the docs →](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent#step-5-update-your-gradle-test-task)
 >
-> 📦 **Using Maven instead of Gradle?** You attach the agent the same way, through Surefire's `argLine`. [See the Maven example below →](#maven-setup) Maven is a [supported build tool](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent), but the docs only show Gradle examples.
+> 📦 **Using Maven instead of Gradle?** You attach the agent the same way, through the Surefire plugin. 
+>
+> [See the Maven example below →](#maven-setup)
 
 ### 4. Run your tests the way you always do
 
@@ -159,15 +159,33 @@ Everything is controlled from `config.yml`. Change the app version, the devices,
 
 ### 🧩 Capabilities in code vs. YAML
 
-**You don't have to remove capabilities from your existing tests.** Any capabilities your tests set in code still work. When `config.yml` sets the same setting, **the YAML value overrides the one in code**.
+**You don't have to remove capabilities from your existing tests.** The rule is simple:
 
-| Your test sets it | `config.yml` sets it | Value used |
-|:---:|:---:|---|
-| ✅ | ❌ | The value from your test code |
-| ❌ | ✅ | The value from `config.yml` |
-| ✅ | ✅ | **The value from `config.yml`** (YAML wins) |
+> **If `config.yml` sets it, `config.yml` wins. If `config.yml` doesn't set it, your test code is used.**
 
-So you can adopt Test Orchestrator without touching your tests, then move settings into YAML gradually. For example, start by setting only `deviceQuery` in the YAML so you can switch devices for every test from one place, and leave everything else as it is.
+**Example.** Your test already sets a device query and an app:
+
+```java
+dc.setCapability("digitalai:deviceQuery", "@os='ios' and @version='17.0'");
+dc.setCapability(MobileCapabilityType.APP, "cloud:com.experitest.ExperiBank");
+```
+
+Your `config.yml` sets **only** the device query:
+
+```yaml
+deviceQuery:
+  iosQuery:
+    deviceQuery: "@os='ios' and @version>='18.0'"
+```
+
+When the test runs, it uses:
+
+| Capability | Value used | Why |
+|---|---|---|
+| Device query | `@os='ios' and @version>='18.0'` | Set in `config.yml`, so it **overrides** the code |
+| App | `cloud:com.experitest.ExperiBank` | Not set in `config.yml`, so the **code value** is kept |
+
+This means you can adopt Test Orchestrator without touching your tests, then move settings into `config.yml` one at a time.
 
 ```yaml
 # ─── Where to run ──────────────────────────────────────────────
@@ -361,25 +379,6 @@ mvn test
 
 ---
 
-## 🔐 Keeping credentials safe
-
-`config.yml` contains your access key, so treat it like a secret:
-
-- This repo commits only `lib/config.example.yml`, which has placeholders. The real `lib/config.yml` is git-ignored.
-- In CI, create `config.yml` in a pipeline step that pulls the key from your secrets manager (for example GitHub Secrets or Jenkins Credentials):
-
-  ```yaml
-  # GitHub Actions
-  - name: Create config.yml
-    env:
-      DAI_ACCESS_KEY: ${{ secrets.DAI_ACCESS_KEY }}
-    run: sed "s|<YOUR_ACCESS_KEY>|$DAI_ACCESS_KEY|" lib/config.example.yml > lib/config.yml
-  ```
-- Keep the access key out of your test code too. Test Orchestrator supplies it from `config.yml`.
-- If a key is ever committed, **rotate it**. Deleting it from git history isn't enough.
-
----
-
 ## 📜 Logs
 
 Each run writes a detailed log to:
@@ -388,7 +387,7 @@ Each run writes a detailed log to:
 smart-agent/<run-id>/smartagent-main.log
 ```
 
-The log shows which config was loaded, which frameworks were detected (Java, JUnit, TestNG, Appium), each test's lifecycle, retry attempts, and failure reasons. Look here first when something doesn't behave as expected. `smart-agent/` is already in this repo's `.gitignore`.
+The log shows which config was loaded, which frameworks were detected (Java, JUnit, TestNG, Appium), each test's lifecycle, retry attempts, and failure reasons. Look here first when something doesn't behave as expected.
 
 ---
 

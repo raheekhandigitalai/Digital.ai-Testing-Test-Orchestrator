@@ -41,8 +41,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
 ### Test Orchestrator ###
-# Real config holds your access key: copy lib/config.example.yml to lib/config.yml
-lib/config.yml
 # Per-run logs
 smart-agent/

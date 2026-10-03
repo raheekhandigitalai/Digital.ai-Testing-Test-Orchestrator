@@ -1,0 +1,32 @@
+cloud:
+  url: https://uscloud.experitest.com/wd/hub
+  accessKey:
+
+app:
+  ios:
+    app: cloud:com.experitest.ExperiBank
+    bundleID: com.experitest.ExperiBank
+#  android:
+#    app: # Optional (e.g cloud:com.experitest.ExperiBank/.LoginActivity can also be cloud:uniqueName)
+#    packageName: # Optional (e.g com.experitest.ExperiBank )
+#    activity: # Optional (e.g .LoginActivity)
+#    appBuildVersion: # Optional
+#    appReleaseVersion: # Optional
+
+deviceQuery:
+#  androidQuery:
+#    deviceQuery: # Optional (e.g "@os='android' and @category='PHONE'")
+  iosQuery:
+    deviceQuery: "@os='ios'"
+#  devicePool: # Optional (e.g SHARED)
+
+appium:
+  appiumVersion: 3.5.2
+
+run:
+  maxRetryAttempts: 2
+  testSelection:
+  # If empty or not specified, all tests will be run
+  # Use ClassName for entire test class
+  # Use ClassName#methodName for specific test method
+  # - com.experitest.DemoTest#sampleTest
