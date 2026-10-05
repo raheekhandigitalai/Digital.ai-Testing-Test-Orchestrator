@@ -65,7 +65,7 @@ appium:
 # ─── 5. RUN BEHAVIOUR ─────────────────────────────────────────────────
 run:
   # Retry each FAILED test up to N more times (default: 0).
-  # Every attempt shows up in Reporter, so you can tell flaky from broken.
+  # Every attempt shows up in Reporter, to help you spot flaky failures.
   maxRetryAttempts: 2
 
   # Which tests to run. Leave empty to run everything.

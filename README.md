@@ -30,7 +30,7 @@ Test Orchestrator sits between your Appium tests and the **Digital.ai Testing** 
 
 ### Why it exists
 
-As a test suite grows (and AI helps teams write even more tests), regression runs start failing for reasons that aren't obvious. Teams may lose hours rerunning failed tests by hand just to learn whether a failure **repeats** (a real defect) or was **temporary** (a flaky device, e.g., a network blip). Test Orchestrator does that rerunning for you, while also making the setting of capabilities easier by centralizing them.
+As a test suite grows (and AI helps teams write even more tests), regression runs start failing for reasons that aren't obvious. Teams may lose hours rerunning failed tests by hand just to learn whether a failure **repeats** (which points to a possible defect) or was **temporary** (for example, a network blip or a device issue). Test Orchestrator does that rerunning for you, while also making the setting of capabilities easier by centralizing them.
 
 ### What it is, in one table
 
@@ -145,11 +145,11 @@ tasks.test {
 Open **Reporter** in Digital.ai Testing and filter by your **Build ID**. Each failing test now shows several attempts:
 
 ```text
-edge_case_payment_test   Attempt 1 ❌  →  Attempt 2 ❌  →  Attempt 3 ❌   ⇒ consistent failure, likely a real defect
+edge_case_payment_test   Attempt 1 ❌  →  Attempt 2 ❌  →  Attempt 3 ❌   ⇒ fails every time: worth investigating first
 positive_payment_test    Attempt 1 ✅                                   ⇒ passed, no retry needed
 ```
 
-When a test fails on attempt 1 and passes on attempt 2, that's a **flaky** test. When it fails on every attempt, look at it as a **real** failure.
+When a test fails and then passes on a retry, there's a good chance the failure came from something other than your app, like the environment, the network or timing. When it fails on every attempt, that's a stronger signal of a real problem. Either way, the attempts in Reporter give you a clearer place to start, not a final verdict.
 
 ---
 
@@ -256,10 +256,10 @@ run:
 
 Set `run.maxRetryAttempts`. Test Orchestrator **only retries tests that fail**. Tests that pass run once. Every attempt is reported separately, so you can see the full history of each test in one place.
 
-| Pattern in Reporter | What it usually means |
+| Pattern in Reporter | What it may indicate |
 |---|---|
-| ❌ → ✅ | **Flaky.** Something in the environment, the network or the timing. Worth stabilizing, but not a product bug. |
-| ❌ → ❌ → ❌ | **Consistent failure.** Likely a real defect. Start debugging here. |
+| ❌ → ✅ | **Possibly flaky.** There's a good chance the failure came from the environment, the network or timing, rather than a defect in your app. Worth a look, especially if it keeps happening. |
+| ❌ → ❌ → ❌ | **Consistent failure.** A stronger signal of a real problem, in the app or in the test itself. A good place to start debugging. |
 
 ### 🎯 Selective test execution
 
