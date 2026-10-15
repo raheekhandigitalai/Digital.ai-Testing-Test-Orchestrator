@@ -28,6 +28,10 @@ Test Orchestrator sits between your Appium tests and the **Digital.ai Testing** 
 
 The goal is simple: less time managing test runs, faster feedback, and greater confidence in your releases.
 
+<div align="center">
+  <img src="docs/images/test-orchestrator-overview.png" alt="Diagram in three steps. 1: Your test project keeps its existing tests, with Test Orchestrator (a JAR plus config.yml) added to the project. 2: An AI agent over MCP, such as Claude Code, Codex, Copilot or Cursor, runs tests, updates configuration and gets results through Test Orchestrator. 3: Tests run on real devices on the Digital.ai Testing platform, in the cloud (SaaS) or on-premises." width="900">
+</div>
+
 > **The short version:** Your team already has Appium tests running on Digital.ai Testing. Test Orchestrator helps manage how those tests run, without changing the tests themselves.
 
 ### Why it exists
