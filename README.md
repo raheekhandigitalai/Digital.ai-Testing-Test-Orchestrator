@@ -86,7 +86,7 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 └── smart-agent/<run-id>/              ← generated: one log folder per run
 ```
 
-> 💡 The example tests are deliberately simple: a driver session plus a basic assertion. To keep them short, they set only the test name and leave the cloud URL, access key, app and devices to `config.yml`. Your own tests can keep their existing capabilities. See [Capabilities in code vs. YAML](#-capabilities-in-code-vs-yaml). `edge_case_login_test` and `edge_case_payment_test` **fail on purpose**, so you can watch the retries happen.
+> 💡 The example tests are deliberately simple: a driver session plus a basic assertion. They leave the cloud URL and access key to `config.yml`, and declare a baseline app, device query and Appium version that `config.yml` overrides (see the note on overrides below). Your own tests can keep their existing capabilities. See [Capabilities in code vs. YAML](#-capabilities-in-code-vs-yaml). `edge_case_login_test` and `edge_case_payment_test` **fail on purpose**, so you can watch the retries happen.
 
 ---
 
@@ -162,6 +162,8 @@ Everything is controlled from `config.yml`. Change the app version, the devices,
 **You don't have to remove capabilities from your existing tests.** The rule is simple:
 
 > **If `config.yml` sets it, `config.yml` wins. If `config.yml` doesn't set it, your test code is used.**
+
+> ⚠️ **`config.yml` overrides capabilities; it doesn't add them.** The app (`app`, `bundleID` / `packageName`, `activity`, `appBuildVersion`, `appReleaseVersion`), `deviceQuery`, `devicePool` and `appiumVersion` are applied only when the test already declares that capability, with any value. A test that never sets them runs without them, even if `config.yml` defines them, and without an Appium version the session may be routed to Appium Grid. The cloud URL and access key are the exception: they always come from `config.yml`. The example tests in this repo declare a baseline for each, so the YAML can replace it.
 
 **Example.** Your test already sets a device query and an app:
 

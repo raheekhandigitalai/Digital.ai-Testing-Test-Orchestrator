@@ -1,7 +1,6 @@
 package tests;
 
 import io.appium.java_client.ios.IOSDriver;
-import io.appium.java_client.ios.IOSElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -15,16 +14,21 @@ import static org.testng.AssertJUnit.*;
 
 public class PaymentScenariosTest {
 
-    protected IOSDriver<IOSElement> driver = null;
+    protected IOSDriver driver = null;
     DesiredCapabilities dc = new DesiredCapabilities();
 
     @BeforeMethod
     public void setUp(Method method) throws MalformedURLException {
-        // Capabilities set here still work, but any value also set in lib/config.yml
-        // overrides them. This example sets only the test name and leaves the cloud,
-        // access key, app and device query to the YAML.
         dc.setCapability("digitalai:testName", method.getName());
-        driver = new IOSDriver<>(new URL("https://uscloud.experitest.com/wd/hub"), dc);
+        // Test Orchestrator overrides capabilities the test already declares; it does not
+        // add new ones. So the test declares a baseline app, device query and Appium
+        // version, and lib/config.yml replaces those values. The cloud URL and access
+        // key come from lib/config.yml alone.
+        dc.setCapability("appium:app", "cloud:com.experitest.ExperiBank");
+        dc.setCapability("appium:bundleId", "com.experitest.ExperiBank");
+        dc.setCapability("digitalai:deviceQuery", "@os='ios'");
+        dc.setCapability("digitalai:appiumVersion", "3.5.2");
+        driver = new IOSDriver(new URL("https://uscloud.experitest.com/wd/hub"), dc);
     }
 
     @Test

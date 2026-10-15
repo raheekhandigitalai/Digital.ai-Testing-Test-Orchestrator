@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation(group = "io.appium", name = "java-client", version = "7.6.0")
+    testImplementation(group = "io.appium", name = "java-client", version = "9.3.0")
     testImplementation("org.testng:testng:7.12.0")
 }
 
