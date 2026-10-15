@@ -2,7 +2,7 @@
 
 # Digital.ai Test Orchestrator
 
-**Retry flaky Appium tests automatically, run only the tests you need, and control everything from one YAML file, without changing your test code.**
+**Smarter, more efficient test execution for your Appium tests: automatic retries, faster feedback on critical tests, and insight into unreliable tests, without changing your existing tests.**
 
 ![Java](https://img.shields.io/badge/Java-17%20%7C%2021-orange?logo=openjdk&logoColor=white)
 ![TestNG](https://img.shields.io/badge/TestNG-7%2B-blue)
@@ -24,23 +24,29 @@
 
 ## 🧭 What is Test Orchestrator?
 
-Test Orchestrator sits between your Appium tests and the **Digital.ai Testing** platform. It controls how your tests run and retries failures automatically. You don't need to change your tests, or restart a test run manually.
+Test Orchestrator sits between your Appium tests and the **Digital.ai Testing** platform. It introduces a smarter way to manage test execution: it automatically retries failed tests, gives faster feedback on critical tests, and helps identify unreliable tests. Combined with MCP, it also extends AI-driven testing workflows with smarter execution management, without the need to change your existing tests.
 
-> **The short version:** Your team already runs Appium tests on Digital.ai Testing. Test Orchestrator controls how those tests run. It retries failures automatically and shows every attempt in Reporter. Your team spends less time rerunning tests by hand, and has a clearer place to start when something fails. **Your test methods stay as they are.**
+The goal is simple: less time managing test runs, faster feedback, and greater confidence in your releases.
+
+> **The short version:** Your team already has Appium tests running on Digital.ai Testing. Test Orchestrator helps manage how those tests run, without changing the tests themselves.
 
 ### Why it exists
 
-As a test suite grows (and AI helps teams write even more tests), regression runs start failing for reasons that aren't obvious. Teams may lose hours rerunning failed tests by hand just to learn whether a failure **repeats** (which points to a possible defect) or was **temporary** (for example, a network blip or a device issue). Test Orchestrator does that rerunning for you, while also making the setting of capabilities easier by centralizing them.
+As test automation grows, you end up with a mountain of scripts, and AI helps teams create even more. When it's time for regression testing, the tests that are meant to give you confidence can fail for reasons that aren't obvious.
+
+The challenge isn't just running more tests. It's managing how those tests run, knowing which failures need attention, and getting the right feedback at the right time. That's what Test Orchestrator is for.
 
 ### What it is, in one table
 
 | | |
 |---|---|
 | 📦 **A Java agent** | A single JAR, attached to your existing test run with `-javaagent`. No SDK to code against. |
-| 📝 **One YAML file** | Cloud connection, app, device selection, retries, and which tests to run all live in `config.yml`. |
-| 🔁 **Automatic retries** | Failed tests are rerun up to *N* times. Every attempt is visible in Reporter. |
+| 🔁 **Automatic retries** | Failed tests are rerun up to *N* times, to help tell temporary failures from repeatable defects. Every attempt is visible in Reporter. |
+| ⚡ **Faster feedback on critical tests** | Get notified of critical test failures sooner, without waiting for the entire run to finish (fail fast). |
+| 🔎 **Unreliable test identification** | Spot tests that fail inconsistently, so you know where to focus debugging and how to improve automation reliability. |
+| 🤖 **AI-driven workflows** | Combined with MCP, extends AI-driven testing workflows with smarter execution management. |
+| 📝 **One YAML file** | Defines how tests execute: cloud connection, app, device selection, retries, and which tests to run. Configuration-based adoption, no changes to your existing tests. |
 | 🎯 **Test selection** | Run one class or one method from config. You don't need to edit test suites or build files. |
-| 🛑 **Fail fast** | When a critical test fails, Test Orchestrator skips the tests that would fail anyway. |
 
 
 ### How it works
@@ -54,7 +60,7 @@ flowchart LR
     B -->|"build ID · run ID · attempts"| D["📊 Reporter"]
 ```
 
-Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test runner (JUnit / TestNG) and the Appium driver. When a test starts, it applies the capabilities from your YAML file on top of any capabilities your test already sets. It then decides which tests run, retries any that fail, and reports each attempt to Reporter.
+Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test runner (JUnit / TestNG) and the Appium driver.
 
 ---
 
@@ -80,13 +86,13 @@ Test Orchestrator runs as a **JVM agent**. At runtime it hooks into the test run
 │   ├── config.yml                     ← THE config file: the agent reads this one
 │   └── config.example.yml             ← annotated example with more options
 ├── src/test/java/tests/
-│   ├── LoginScenariosTest.java        ← 3 example tests (1 fails on purpose)
-│   └── PaymentScenariosTest.java      ← 3 example tests (1 fails on purpose)
+│   ├── LoginScenariosTest.java        ← 2 example tests
+│   └── PaymentScenariosTest.java      ← 2 example tests
 ├── build.gradle.kts                   ← attaches the agent to the `test` task
 └── smart-agent/<run-id>/              ← generated: one log folder per run
 ```
 
-> 💡 The example tests are deliberately simple: a driver session plus a basic assertion. They leave the cloud URL and access key to `config.yml`, and declare a baseline app, device query and Appium version that `config.yml` overrides (see the note on overrides below). Your own tests can keep their existing capabilities. See [Capabilities in code vs. YAML](#-capabilities-in-code-vs-yaml). `edge_case_login_test` and `edge_case_payment_test` **fail on purpose**, so you can watch the retries happen.
+> 💡 **The example tests are flaky on purpose to demonstrate how the Test Orchestrator handles flakiness.**
 
 ---
 
@@ -142,11 +148,12 @@ tasks.test {
 
 ### 5. Check the results in Reporter
 
-Open **Reporter** in Digital.ai Testing and filter by your **Build ID**. Each failing test now shows several attempts:
+Open **Reporter** in Digital.ai Testing and filter by your **Build ID**. A test that fails now shows every attempt. Because the example tests are random, your results will differ, but they will look something like this:
 
 ```text
-edge_case_payment_test   Attempt 1 ❌  →  Attempt 2 ❌  →  Attempt 3 ❌   ⇒ fails every time: worth investigating first
+negative_payment_test    Attempt 1 ❌  →  Attempt 2 ✅                   ⇒ failed once, passed on retry
 positive_payment_test    Attempt 1 ✅                                   ⇒ passed, no retry needed
+positive_login_test      Attempt 1 ❌  →  Attempt 2 ❌  →  Attempt 3 ❌   ⇒ failed every attempt (possible with random tests, but less likely)
 ```
 
 When a test fails and then passes on a retry, there's a good chance the failure came from something other than your app, like the environment, the network or timing. When it fails on every attempt, that's a stronger signal of a real problem. Either way, the attempts in Reporter give you a clearer place to start, not a final verdict.
@@ -155,7 +162,7 @@ When a test fails and then passes on a retry, there's a good chance the failure 
 
 ## ⚙️ Configuration reference
 
-Everything is controlled from `config.yml`. Change the app version, the devices, the retries or the tests to run **without touching any test code.**
+Everything is controlled from `config.yml`. Change the app version, the devices, the retries or the tests to run **without touching your test methods.**
 
 ### 🧩 Capabilities in code vs. YAML
 
@@ -163,13 +170,11 @@ Everything is controlled from `config.yml`. Change the app version, the devices,
 
 > **If `config.yml` sets it, `config.yml` wins. If `config.yml` doesn't set it, your test code is used.**
 
-> ⚠️ **`config.yml` overrides capabilities; it doesn't add them.** The app (`app`, `bundleID` / `packageName`, `activity`, `appBuildVersion`, `appReleaseVersion`), `deviceQuery`, `devicePool` and `appiumVersion` are applied only when the test already declares that capability, with any value. A test that never sets them runs without them, even if `config.yml` defines them, and without an Appium version the session may be routed to Appium Grid. The cloud URL and access key are the exception: they always come from `config.yml`. The example tests in this repo declare a baseline for each, so the YAML can replace it.
-
 **Example.** Your test already sets a device query and an app:
 
 ```java
 dc.setCapability("digitalai:deviceQuery", "@os='ios' and @version='17.0'");
-dc.setCapability(MobileCapabilityType.APP, "cloud:com.experitest.ExperiBank");
+dc.setCapability("appium:app", "cloud:com.experitest.ExperiBank");
 ```
 
 Your `config.yml` sets **only** the device query:
@@ -187,7 +192,7 @@ When the test runs, it uses:
 | Device query | `@os='ios' and @version>='18.0'` | Set in `config.yml`, so it **overrides** the code |
 | App | `cloud:com.experitest.ExperiBank` | Not set in `config.yml`, so the **code value** is kept |
 
-This means you can adopt Test Orchestrator without touching your tests.
+This means you can adopt Test Orchestrator without touching your test methods. To change a value for every test, change it once in `config.yml`.
 
 ```yaml
 # ─── Where to run ──────────────────────────────────────────────
@@ -226,7 +231,7 @@ run:
   maxRetryAttempts: 2                     # Retries per failed test (default: 0)
   testSelection:                          # Empty = run everything
     # - tests.LoginScenariosTest                         # a whole class
-    # - tests.PaymentScenariosTest#edge_case_payment_test  # a single method
+    # - tests.PaymentScenariosTest#negative_payment_test  # a single method
   # criticalTests:                        # Fail fast (see below)
   #   - tests.LoginScenariosTest#positive_login_test
 ```
@@ -256,12 +261,16 @@ run:
 
 ### 🔁 Automatic retries
 
-Set `run.maxRetryAttempts`. Test Orchestrator **only retries tests that fail**. Tests that pass run once. Every attempt is reported separately, so you can see the full history of each test in one place.
+Set `run.maxRetryAttempts`. Test Orchestrator **only retries tests that fail**, which helps distinguish temporary failures from repeatable defects without anyone rerunning a build by hand. Tests that pass run once. Every attempt is reported separately, so you can see the full history of each test in one place.
 
 | Pattern in Reporter | What it may indicate |
 |---|---|
 | ❌ → ✅ | **Possibly flaky.** There's a good chance the failure came from the environment, the network or timing, rather than a defect in your app. Worth a look, especially if it keeps happening. |
 | ❌ → ❌ → ❌ | **Consistent failure.** A stronger signal of a real problem, in the app or in the test itself. A good place to start debugging. |
+
+### 🔎 Identifying unreliable tests
+
+Because every attempt is reported and each test keeps a **Test Case ID**, you can see which tests fail inconsistently across attempts and across runs. Filter by Test Case ID in Reporter to see how stable a test has been over time, so your team can focus its debugging effort and improve automation reliability.
 
 ### 🎯 Selective test execution
 
@@ -271,12 +280,12 @@ Run part of your suite without editing TestNG XML files, JUnit tags or build scr
 run:
   testSelection:
     - tests.LoginScenariosTest                          # whole class
-    - tests.PaymentScenariosTest#edge_case_payment_test   # single method
+    - tests.PaymentScenariosTest#negative_payment_test   # single method
 ```
 
 ### 🛑 Fail fast for critical tests
 
-When a critical test fails (for example, login), the tests after it will usually fail too. Fail fast stops those cascading failures:
+Get feedback on critical test failures sooner, without waiting for the entire run to finish. When a critical test fails (for example, login), the tests after it will usually fail too. Fail fast stops those cascading failures:
 
 ```yaml
 run:
@@ -294,7 +303,7 @@ Skipped tests are never retried, and they have no steps, video or logs. Tests th
 
 ### 🔄 Test status sync (automatic)
 
-Sometimes the Appium session status and your framework's result disagree. For example, an assertion fails after the session ends, or a driver exception is caught on purpose. Test Orchestrator makes the **Reporter status match what JUnit/TestNG reported**. This needs no configuration. Screenshots, videos and logs aren't changed.
+Sometimes the Appium session status and your framework's result disagree. For example, an assertion fails after the session ends, or a driver exception is caught on purpose. Test Orchestrator makes the **Reporter status match what JUnit/TestNG reported**. This needs no configuration.
 
 ### 🏷️ Build ID & Run ID
 
@@ -384,7 +393,7 @@ Each run writes a detailed log to:
 smart-agent/<run-id>/smartagent-main.log
 ```
 
-The log shows which config was loaded, which frameworks were detected (Java, JUnit, TestNG, Appium), each test's lifecycle, retry attempts, and failure reasons. Look here first when something doesn't behave as expected.
+The log shows which config was loaded, which frameworks were detected, each test's lifecycle, retry attempts, and failure reasons. Look here first when something doesn't behave as expected.
 
 ---
 
@@ -394,6 +403,7 @@ The log shows which config was loaded, which frameworks were detected (Java, JUn
 |---|---|
 | Agent doesn't seem to run | Is the `-javaagent` path correct and absolute (or built from `${projectDir}`)? Is the JAR present? |
 | Config not applied | Does the path after `=` point to the right `config.yml`? Check the log for `Configuration loaded successfully`. |
+| A setting in `config.yml` has no effect | `config.yml` only overrides capabilities your test already declares. Make sure the test sets that capability (with any value). The cloud URL and access key are the exception. |
 | Strange or ignored settings | YAML indentation. Use spaces only and validate the file. |
 | `NoSuchMethodError` / instrumentation errors in the log | Check you're on Java 17/21 and Appium java-client 8–10, and look for conflicting `byte-buddy` versions on the test classpath. |
 | Retries don't happen | Is `run.maxRetryAttempts` greater than `0`? Only **failed** tests are retried. |
@@ -409,8 +419,6 @@ The log shows which config was loaded, which frameworks were detected (Java, JUn
 - [Viewing results in Reporter](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent/view-test-results-in-test-reporter)
 - [Test status update](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent/test-status-sync-smart-agent)
 - [Fail fast for critical tests](https://docs.digital.ai/continuous-testing/docs/te/test-execution-home/smart-agent/fail-fast-critical-tests)
-
-> 📝 The official docs use the earlier name **Smart Agent**. It's the same product as Test Orchestrator.
 
 ---
 

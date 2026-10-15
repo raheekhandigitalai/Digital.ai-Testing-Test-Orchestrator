@@ -1,17 +1,20 @@
 # ══════════════════════════════════════════════════════════════════════
-#  Digital.ai Test Orchestrator: configuration template
+#  Digital.ai Test Orchestrator: annotated configuration example
 # ══════════════════════════════════════════════════════════════════════
 #
-#  1. Copy this file:   cp lib/config.example.yml lib/config.yml
-#  2. Fill in the <PLACEHOLDERS> below.
+#  1. lib/config.yml is the file that is used. Add your cloud URL and
+#     access key there.
+#  2. Use this file as a reference: copy across any options you need.
 #  3. Run your tests:   ./gradlew test
-#
-#  lib/config.yml is git-ignored, so your access key stays local.
 #
 #  HOW THIS FILE RELATES TO YOUR TEST CODE
 #  Capabilities your tests set in code still work. Any setting that is
 #  also defined here OVERRIDES the value in code. Leave a key out (or
 #  commented) and the value from your code is used instead.
+#  Overrides only apply to capabilities the test already declares (app,
+#  deviceQuery, devicePool, appiumVersion). A capability the test never
+#  sets is not added from here. cloud.url and cloud.accessKey always
+#  come from this file.
 #
 #  Indent with spaces only. Tabs and misaligned keys break YAML.
 # ══════════════════════════════════════════════════════════════════════
@@ -73,7 +76,7 @@ run:
   #   ClassName#methodName   → one test method
   testSelection:
     # - tests.LoginScenariosTest
-    # - tests.PaymentScenariosTest#edge_case_payment_test
+    # - tests.PaymentScenariosTest#negative_payment_test
 
   # Fail fast: if a critical test still fails after its retries, the
   # remaining queued tests are marked Skipped instead of run.
