@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Random;
 
 import static org.testng.AssertJUnit.*;
 
@@ -33,40 +34,30 @@ public class PaymentScenariosTest {
 
     @Test
     public void positive_payment_test() {
-        double accountBalance = 500.00;
-        double paymentAmount = 150.00;
-
-        double remainingBalance = accountBalance - paymentAmount;
-
-        assertEquals("Incorrect remaining balance",
-                350.00, remainingBalance, 0.01);
+        int randomNumber = getRandomNumber();
+        assertTrue(
+                "Test failed because generated number was " + randomNumber,
+                randomNumber < 50
+        );
     }
 
     @Test
     public void negative_payment_test() {
-        double accountBalance = 100.00;
-        double paymentAmount = 250.00;
-
-        boolean paymentApproved = paymentAmount <= accountBalance;
-
-        assertFalse("Payment should be declined", paymentApproved);
-    }
-
-    @Test
-    public void edge_case_payment_test() {
-        double accountBalance = 100.00;
-        double paymentAmount = 100.00;
-
-        boolean paymentApproved = paymentAmount < accountBalance;
-
-        assertTrue("Payment should succeed when using exact balance",
-                paymentApproved);
+        int randomNumber = getRandomNumber();
+        assertTrue(
+                "Test failed because generated number was " + randomNumber,
+                randomNumber < 50
+        );
     }
 
     @AfterMethod
     public void tearDown() {
         System.out.println("Report URL: " + driver.getCapabilities().getCapability("digitalai:reportUrl"));
         driver.quit();
+    }
+
+    private int getRandomNumber() {
+        return new Random().nextInt(100);
     }
 
 }

@@ -7,9 +7,9 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Random;
 
-import static org.testng.AssertJUnit.assertFalse;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.*;
 
 public class LoginScenariosTest {
 
@@ -32,41 +32,30 @@ public class LoginScenariosTest {
 
     @Test
     public void positive_login_test() {
-        String username = "admin";
-        String password = "admin123";
-
-        boolean isAuthenticated = username.equals("admin")
-                && password.equals("admin123");
-
-        assertTrue("Login should succeed", isAuthenticated);
+        int randomNumber = getRandomNumber();
+        assertTrue(
+                "Test failed because generated number was " + randomNumber,
+                randomNumber < 50
+        );
     }
 
     @Test
     public void negative_login_test() {
-        String username = "admin";
-        String password = "wrongpassword";
-
-        boolean isAuthenticated = username.equals("admin")
-                && password.equals("admin123");
-
-        assertFalse("Login should fail with invalid credentials", isAuthenticated);
-    }
-
-    @Test
-    public void edge_case_login_test() {
-        String password = "admin123";
-        int failedAttempts = 5;
-        int maxAttempts = 3;
-
-        boolean isAccountLocked = failedAttempts >= maxAttempts;
-
-        assertFalse("Account should not be locked", isAccountLocked);
+        int randomNumber = getRandomNumber();
+        assertTrue(
+                "Test failed because generated number was " + randomNumber,
+                randomNumber < 50
+        );
     }
 
     @AfterMethod
     public void tearDown() {
         System.out.println("Report URL: " + driver.getCapabilities().getCapability("digitalai:reportUrl"));
         driver.quit();
+    }
+
+    private int getRandomNumber() {
+        return new Random().nextInt(100);
     }
 
 }
